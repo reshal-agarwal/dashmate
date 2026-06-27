@@ -3,7 +3,17 @@
 import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
-export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  error?: string;
+}
+interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  error?: string;
+}
+interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  error?: string;
+}
+
+export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, type = 'text', error, ...props }, ref) => {
     return (
       <div className="w-full">
@@ -28,7 +38,7 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
 
 Input.displayName = 'Input';
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, error, ...props }, ref) => {
     return (
       <div className="w-full">
@@ -52,7 +62,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
 
 Textarea.displayName = 'Textarea';
 
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ className, error, ...props }, ref) => {
     return (
       <div className="w-full">

@@ -48,7 +48,8 @@ async function startServer(): Promise<void> {
       console.log('Connected to Redis');
     }
 
-    initSocket(httpServer);
+    const io = initSocket(httpServer);
+    (global as any).io = io;
     console.log('Socket.io initialized');
 
     initCronJobs();

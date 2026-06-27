@@ -83,11 +83,16 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-client-api-key
 NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxx
 ```
 
+## 🚦 Current Status
+
+**Phase 1 Complete** — Student Core (restaurant browsing, cart, checkout, wallet, orders, credits)
+**Phase 2** — Restaurant Owner dashboard (next)
+
 ## 📱 Features
 
 | Role | Capabilities |
 |------|--------------|
-| **Student** | Browse restaurants, cart, checkout (wallet/UPI/COD), order tracking, wallet & credits, courier application |
+| **Student** | Browse & search restaurants, menu with dietary tags, cart (single-restaurant enforcement), checkout (wallet/UPI/COD/credits), order tracking, ratings, wallet top-up (Razorpay), credits earn/convert, notifications, profile & addresses |
 | **Courier** | Online/offline, nearby orders, accept/pickup/deliver (4-digit codes), earnings, payout requests |
 | **Restaurant Owner** | Product CRUD, order kanban, prep timers, analytics, payout requests |
 | **Admin** | Restaurant onboarding, courier verification, order oversight, disputes, coupons, platform settings |
@@ -98,22 +103,25 @@ NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxx
 - Next.js 15 (App Router, Turbopack)
 - TypeScript (strict mode)
 - Tailwind CSS v4
-- Zustand (state management)
+- Zustand (state management, persisted)
+- Axios (API client with interceptors)
 - Socket.io Client (real-time)
-- @react-google-maps/api
-- React Hook Form + Zod
-- Razorpay JS
+- Lucide React (icons)
+- Razorpay JS (wallet top-ups)
+- clsx + tailwind-merge (class utilities)
 
 **Backend:**
 - Express 5
-- Mongoose 8
-- Socket.io 4 (namespaces, rooms)
+- Mongoose 8 (8 models: User, Restaurant, Product, Order, Transaction, Coupon, Notification, WithdrawalRequest)
+- Socket.io 4 (4 namespaces: /student, /courier, /restaurant, /admin)
 - JWT (access tokens)
 - bcryptjs, otp-generator
 - express-rate-limit + rate-limit-redis
-- node-cron (scheduled jobs)
+- node-cron (scheduled jobs: credit expiry, auto-cancel, stats rollup, payout reminders)
+- Zod (request validation)
 - @googlemaps/google-maps-services-js
-- Cloudinary SDK
+- Razorpay (payment gateway)
+- Cloudinary SDK (image uploads)
 
 ## 📋 API Contract
 
@@ -159,16 +167,14 @@ docker-compose up -d
 
 ## 📄 Documentation
 
-- [Project Plan & Progress](PROJECT_PLAN.md) - Complete specification, timeline, progress tracking
-- [API Contracts](backend/docs/API_CONTRACTS.md) - Detailed endpoint specs (to be created)
-- [Database Schema](backend/docs/SCHEMA.md) - Model definitions (to be created)
+- [Project Plan & Progress](PROJECT_PLAN.md) — Complete specification, timeline, progress tracking, API contracts, DB schema
 
 ## 🤝 Contributing
 
 1. Read `PROJECT_PLAN.md` for current phase & context
 2. Keep commits small (100-150 lines), focused
 3. Format: `type(scope): description` (feat, fix, refactor, docs, chore, test)
-4. Run `npm run lint && npm run typecheck` before commit
+4. Run `npm run build && tsc --noEmit` before commit
 5. Update progress in `PROJECT_PLAN.md` after each phase
 
 ## 📄 License

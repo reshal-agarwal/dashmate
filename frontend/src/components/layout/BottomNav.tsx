@@ -21,11 +21,19 @@ import {
 } from 'lucide-react';
 
 interface BottomNavProps {
-  children: ReactNode;
+  children?: ReactNode;
   role?: 'student' | 'courier' | 'restaurant';
 }
 
-const navItems = {
+interface NavItem {
+  href: string;
+  label: string;
+  icon: any;
+  match: string;
+  badge?: boolean;
+}
+
+const navItems: Record<string, NavItem[]> = {
   student: [
     { href: '/', label: 'Home', icon: Home, match: '/' },
     { href: '/orders', label: 'Orders', icon: Receipt, match: '/orders' },
