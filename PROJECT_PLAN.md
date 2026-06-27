@@ -74,22 +74,22 @@ A peer-to-peer delivery marketplace for college students where:
 - [x] Updated package.json with all dependencies
 - [x] Backend compiles successfully (`npm run build` passes)
 
-### Phase 1: Student Core (Week 1, Days 3-7) - IN PROGRESS
+### Phase 1: Student Core (Week 1, Days 3-7) - COMPLETE
 - [x] Frontend project structure setup (mobile-first app router layout groups)
 - [x] TypeScript types for all domain models (User, Restaurant, Product, Order, etc.)
 - [x] API client with axios interceptors, auth token management, error handling
 - [x] Zustand stores: authStore (persisted), cartStore (persisted, single-restaurant enforcement)
 - [x] Tailwind config with custom colors, animations, mobile-first utilities
-- [ ] Restaurant model + CRUD (admin creates, student reads)
-- [ ] Product model + CRUD (restaurant owner creates)
-- [ ] Restaurant listing with filters (category, open now, rating, search)
-- [ ] Restaurant detail + menu (categories, dietary tags)
-- [ ] Client-side cart (Zustand + persist, single-restaurant enforcement)
-- [ ] Checkout flow: address selection, coupon, credits, payment method
-- [ ] Wallet top-up (Razorpay integration)
-- [ ] Order placement + tracking (Google Maps polyline)
-- [ ] Order history + ratings
-- [ ] Credits earn/spend logic + history
+- [x] Restaurant model + CRUD (backend controllers, admin creates, student reads)
+- [x] Product model + CRUD (backend controllers, linked to restaurants)
+- [x] Restaurant listing with filters (category, open now, rating, search)
+- [x] Restaurant detail + menu (categories, dietary tags, spice level)
+- [x] Client-side cart (Zustand + persist, single-restaurant enforcement)
+- [x] Checkout flow: address form, coupon, credits, wallet/UPI/COD payment
+- [x] Wallet top-up (Razorpay integration with signature verification)
+- [x] Order placement with pricing, coupon discount, credits, notifications
+- [x] Order history + detail view + ratings
+- [x] Credits earn/spend logic + conversion to wallet + history
 
 ### Phase 2: Restaurant Owner (Week 2, Days 1-3)
 - [ ] Restaurant dashboard (today's orders, stats, earnings)
@@ -246,11 +246,13 @@ MAX_CART_ITEMS = 50 items
 
 ---
 
-## 🏁 Current Status: Phase 0 Complete → Starting Phase 1
+## 🏁 Current Status: Phase 1 Complete
 
 **Phase 0 completed:** All foundation contracts, middleware, models, validators, routes structure, cron jobs, Socket.io setup
 
-**Next commit**: `feat(student): restaurant listing, menu, client-side cart (Zustand)`
+**Phase 1 completed:** Full student core - restaurant listing/menu, client cart, checkout, order placement/cancellation/rating, wallet topup (Razorpay), credits earn/convert/history, profile/addresses/notifications
+
+**Next**: Phase 2 - Restaurant Owner (dashboard, product management, order kanban, payouts)
 
 ---
 
