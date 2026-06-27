@@ -4,6 +4,8 @@ node_modules/
 # Next.js build output
 .next/
 out/
+# TypeScript build output
+dist/
 # Logs
 npm-debug.log*
 yarn-debug.log*
