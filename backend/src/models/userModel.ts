@@ -26,6 +26,16 @@ export interface ICourierProfile {
   earningsTotal: number;
 }
 
+export interface IAddress {
+  building: string;
+  floor?: string;
+  roomNumber: string;
+  landmark?: string;
+  coordinates?: { lat: number; lng: number };
+  label?: string;
+  isDefault?: boolean;
+}
+
 export interface IPreferences {
   notifications: boolean;
   dietaryRestrictions: string[];
@@ -45,6 +55,7 @@ export interface IUser extends Document {
   pointsBalance: number;
   courier?: ICourierProfile;
   restaurant?: mongoose.Types.ObjectId;
+  addresses: IAddress[];
   preferences: IPreferences;
   isVerified: boolean;
   otp?: string;
@@ -83,6 +94,19 @@ const courierProfileSchema = new Schema<ICourierProfile>({
   earningsTotal: { type: Number, default: 0 },
 });
 
+const addressSchema = new Schema<IAddress>({
+  building: { type: String, required: true },
+  floor: String,
+  roomNumber: { type: String, required: true },
+  landmark: String,
+  coordinates: {
+    lat: { type: Number, min: -90, max: 90 },
+    lng: { type: Number, min: -180, max: 180 },
+  },
+  label: String,
+  isDefault: { type: Boolean, default: false },
+}, { _id: true });
+
 const preferencesSchema = new Schema<IPreferences>({
   notifications: { type: Boolean, default: true },
   dietaryRestrictions: [{ type: String }],
@@ -102,6 +126,7 @@ const userSchema = new Schema<IUser>({
   pointsBalance: { type: Number, default: 0 },
   courier: courierProfileSchema,
   restaurant: { type: Schema.Types.ObjectId, ref: 'Restaurant' },
+  addresses: [addressSchema],
   preferences: { type: preferencesSchema, default: () => ({}) },
   isVerified: { type: Boolean, default: false },
   otp: String,

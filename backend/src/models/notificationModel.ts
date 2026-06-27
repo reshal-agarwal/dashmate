@@ -29,6 +29,7 @@ export interface INotification extends Document {
   readAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  markAsRead: () => Promise<INotification>;
 }
 
 const notificationSchema = new Schema<INotification>({
