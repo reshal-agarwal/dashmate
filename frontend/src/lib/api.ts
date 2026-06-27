@@ -50,7 +50,7 @@ api.interceptors.response.use(
   }
 );
 
-export const handleApiError = (error: unknown): ApiError => {
+export const handleApiError = (error: unknown): ApiError['error'] => {
   if (axios.isAxiosError(error)) {
     return error.response?.data?.error || {
       code: 'INTERNAL_ERROR',
@@ -70,6 +70,6 @@ export const isApiSuccess = <T>(response: ApiResponse<T>): response is { success
   return response.success === true;
 };
 
-export const isApiError = (response: ApiResponse<any>): response is ApiError => {
+export const isApiError = (response: ApiResponse<any>): response is Extract<ApiResponse<any>, { success: false }> => {
   return response.success === false;
 };
