@@ -316,45 +316,169 @@ export const studentController = {
     });
   },
   getWallet: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { balance: 0, creditsBalance: 0, transactions: [] } });
+    const user = req.user;
+    const { type, page = '1', limit = '20' } = req.query;
+    const pageNum = Math.max(1, parseInt(page as string));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
+    const filter: any = { user: user._id, type: { $in: ['wallet_topup', 'wallet_deduction', 'wallet_refund'] } };
+    if (type) filter.type = type;
+
+    const total = await Transaction.countDocuments(filter);
+    const transactions = await Transaction.find(filter).sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean();
+
+    res.json({
+      success: true,
+      data: { balance: user.walletBalance, creditsBalance: user.creditsBalance, transactions: { items: transactions, pagination: { page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum) } } },
+      meta: { timestamp: new Date().toISOString() },
+    });
   },
+
   initiateTopup: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { orderId: 'rzp_test_xxx', amount: 0 } });
+    const { amount } = req.body;
+    const Razorpay = require('razorpay');
+    const razorpay = new Razorpay({ key_id: config.razorpay.keyId, key_secret: config.razorpay.keySecret });
+    const order = await razorpay.orders.create({ amount: amount * 100, currency: 'INR', receipt: `topup_${req.user._id}_${Date.now()}` });
+
+    res.json({
+      success: true, data: { orderId: order.id, amount: order.amount, currency: order.currency },
+      meta: { timestamp: new Date().toISOString() },
+    });
   },
+
   verifyTopup: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { message: 'Payment verified' } });
+    const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
+    const crypto = require('crypto');
+    const expected = crypto.createHmac('sha256', config.razorpay.keySecret).update(`${razorpayOrderId}|${razorpayPaymentId}`).digest('hex');
+    if (expected !== razorpaySignature) throw new AppError('VALIDATION_ERROR', 'Payment verification failed');
+
+    const user = await User.findById(req.user._id);
+    if (!user) throw new NotFoundError('User');
+
+    const Razorpay = require('razorpay');
+    const razorpay = new Razorpay({ key_id: config.razorpay.keyId, key_secret: config.razorpay.keySecret });
+    const payment = await razorpay.payments.fetch(razorpayPaymentId);
+    const topupAmount = (payment.amount || 0) / 100;
+
+    user.walletBalance += topupAmount;
+    await user.save();
+    await Transaction.create({ user: user._id, type: 'wallet_topup', amount: topupAmount, balanceAfter: user.walletBalance, reference: { id: user._id, model: 'User' }, description: `Wallet topup of ₹${topupAmount}`, status: 'completed' });
+
+    res.json({
+      success: true, data: { message: 'Payment verified', walletBalance: user.walletBalance, amount: topupAmount },
+      meta: { timestamp: new Date().toISOString() },
+    });
   },
+
   getCreditsHistory: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { items: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } } });
+    const { page = '1', limit = '20' } = req.query;
+    const pageNum = Math.max(1, parseInt(page as string));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
+    const filter: any = { user: req.user._id, type: { $in: ['credits_earned', 'credits_spent', 'credits_expired'] } };
+    const total = await Transaction.countDocuments(filter);
+    const items = await Transaction.find(filter).sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean();
+
+    res.json({
+      success: true, data: { items, pagination: { page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum) } },
+      meta: { timestamp: new Date().toISOString() },
+    });
   },
+
   convertCredits: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { message: 'Credits converted' } });
+    const { credits } = req.body;
+    const user = req.user;
+    if (credits < config.credit.minConversion) throw new AppError('VALIDATION_ERROR', `Minimum ${config.credit.minConversion} credits required`);
+    if (credits > user.creditsBalance) throw new AppError('INSUFFICIENT_CREDITS', 'Insufficient credits');
+
+    const walletAmount = Math.floor(credits * config.credit.earnRate);
+    user.creditsBalance -= credits;
+    user.walletBalance += walletAmount;
+    user.creditsLastActivityAt = new Date();
+    await user.save();
+
+    await Transaction.create({ user: user._id, type: 'credits_spent', amount: credits, balanceAfter: user.walletBalance, creditsBalanceAfter: user.creditsBalance, reference: { id: user._id, model: 'User' }, description: `Converted ${credits} credits to ₹${walletAmount}`, status: 'completed' });
+
+    res.json({
+      success: true, data: { message: `Converted ${credits} credits to ₹${walletAmount}`, walletBalance: user.walletBalance, creditsBalance: user.creditsBalance },
+      meta: { timestamp: new Date().toISOString() },
+    });
   },
+
   getProfile: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: req.user });
+    const user = await User.findById(req.user._id).select('-password -otp -otpExpires').lean();
+    res.json({ success: true, data: user, meta: { timestamp: new Date().toISOString() } });
   },
+
   updateProfile: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { message: 'Profile updated' } });
+    const { name, roomNumber, hostelBlock, preferences } = req.body;
+    const user = req.user;
+    if (name) user.name = name;
+    if (roomNumber !== undefined) user.roomNumber = roomNumber;
+    if (hostelBlock !== undefined) user.hostelBlock = hostelBlock;
+    if (preferences) user.preferences = { ...(user.preferences || {}), ...preferences };
+    await user.save();
+
+    res.json({
+      success: true, data: { message: 'Profile updated', user: { name: user.name, roomNumber: user.roomNumber, hostelBlock: user.hostelBlock, preferences: user.preferences } },
+      meta: { timestamp: new Date().toISOString() },
+    });
   },
+
   getAddresses: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: [] });
+    const user = req.user;
+    res.json({ success: true, data: user.addresses || [], meta: { timestamp: new Date().toISOString() } });
   },
+
   addAddress: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { message: 'Address added' } });
+    const user = req.user;
+    const { building, floor, roomNumber, landmark, coordinates, label } = req.body;
+    if (!user.addresses) user.addresses = [];
+    user.addresses.push({ building, floor, roomNumber, landmark, coordinates, label, isDefault: user.addresses.length === 0 });
+    await user.save();
+    res.status(201).json({ success: true, data: { message: 'Address added', addresses: user.addresses }, meta: { timestamp: new Date().toISOString() } });
   },
+
   updateAddress: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { message: 'Address updated' } });
+    const user = req.user;
+    const addr = user.addresses?.id(req.params.id);
+    if (!addr) throw new NotFoundError('Address');
+    Object.assign(addr, req.body);
+    await user.save();
+    res.json({ success: true, data: { message: 'Address updated', addresses: user.addresses }, meta: { timestamp: new Date().toISOString() } });
   },
+
   deleteAddress: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { message: 'Address deleted' } });
+    const user = req.user;
+    user.addresses = (user.addresses || []).filter((a: any) => a._id.toString() !== req.params.id);
+    await user.save();
+    res.json({ success: true, data: { message: 'Address deleted', addresses: user.addresses }, meta: { timestamp: new Date().toISOString() } });
   },
+
   getNotifications: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { items: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } } });
+    const { page = '1', limit = '20', unreadOnly } = req.query;
+    const pageNum = Math.max(1, parseInt(page as string));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
+    const filter: any = { user: req.user._id };
+    if (unreadOnly === 'true') filter.isRead = false;
+
+    const total = await Notification.countDocuments(filter);
+    const items = await Notification.find(filter).sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean();
+    const unreadCount = await Notification.countDocuments({ user: req.user._id, isRead: false });
+
+    res.json({
+      success: true, data: { items, unreadCount, pagination: { page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum) } },
+      meta: { timestamp: new Date().toISOString() },
+    });
   },
+
   markNotificationRead: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { message: 'Notification marked as read' } });
+    const notification = await Notification.findOne({ _id: req.params.id, user: req.user._id });
+    if (!notification) throw new NotFoundError('Notification');
+    await notification.markAsRead();
+    res.json({ success: true, data: { message: 'Notification marked as read' }, meta: { timestamp: new Date().toISOString() } });
   },
+
   markAllNotificationsRead: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { message: 'All notifications marked as read' } });
+    await Notification.updateMany({ user: req.user._id, isRead: false }, { $set: { isRead: true, readAt: new Date() } });
+    res.json({ success: true, data: { message: 'All notifications marked as read' }, meta: { timestamp: new Date().toISOString() } });
   },
 };
