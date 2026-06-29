@@ -91,13 +91,16 @@ A peer-to-peer delivery marketplace for college students where:
 - [x] Order history + detail view + ratings
 - [x] Credits earn/spend logic + conversion to wallet + history
 
-### Phase 2: Restaurant Owner (Week 2, Days 1-3)
-- [ ] Restaurant dashboard (today's orders, stats, earnings)
-- [ ] Product management (CRUD, images via Cloudinary, bulk toggle)
-- [ ] Order kanban: placed → confirmed → preparing → ready
-- [ ] Prep timer + ready notification to couriers
-- [ ] Payout requests (manual UPI first)
-- [ ] Basic analytics (sales, popular items, peak hours)
+### Phase 2: Restaurant Owner (Week 2, Days 1-3) - IN PROGRESS
+- [x] Restaurant dashboard (today's orders, stats, earnings)
+- [x] Product management (CRUD, bulk toggle)
+- [x] Order kanban: placed → confirmed → preparing → ready
+- [x] Prep timer + ready notification to couriers
+- [x] Payout requests (manual UPI first)
+- [x] Basic analytics (sales, popular items, peak hours)
+- [ ] Cloudinary image upload for products
+- [ ] Bulk toggle products by category
+- [ ] Download analytics report
 
 ### Phase 3: Courier (Week 2, Days 4-7)
 - [ ] Courier application + KYC (Aadhar, license, selfie upload)
@@ -252,7 +255,11 @@ MAX_CART_ITEMS = 50 items
 
 **Phase 1 completed:** Full student core - restaurant listing/menu, client cart, checkout, order placement/cancellation/rating, wallet topup (Razorpay), credits earn/convert/history, profile/addresses/notifications
 
-**Next**: Phase 2 - Restaurant Owner (dashboard, product management, order kanban, payouts)
+**Phase 2 completed (backend):** Full restaurant owner controller — dashboard stats, profile management, product CRUD (create/read/update/delete/toggle/bulk-toggle), order kanban (confirm/startPrep/markReady), cancellation with refund, payout request and history, analytics (7-day sales, top items, peak hours)
+
+**Phase 2 completed (frontend):** Restaurant dashboard with stats grid + quick actions, product management with search/add/edit/toggle/delete, order kanban with status filter + inline actions, order detail page with progress bar + action buttons, payout request modal + history
+
+**Next**: Phase 3 - Courier (application, KYC, online/offline, nearby orders, delivery flow, earnings)
 
 ---
 
