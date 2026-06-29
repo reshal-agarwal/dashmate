@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { protect } from '../middleware/auth';
-import { authorize } from '../middleware/auth';
+import { protect, authorize } from '../middleware/auth';
 import { restaurantController } from '../controllers/restaurantController';
 
 const router = Router();
+
+router.use(protect, authorize('restaurant_owner', 'admin'));
 
 router.get('/dashboard', restaurantController.getDashboard);
 router.get('/profile', restaurantController.getProfile);
