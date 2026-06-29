@@ -288,44 +288,6 @@ export class AuthController {
     });
   }
 
-  async applyCourier(req: AuthenticatedRequest, res: Response): Promise<void> {
-    const { vehicleType, vehicleNumber, licenseNumber, kycDocuments } = req.body;
-    const user = req.user!;
-
-    if (user.role === 'courier' && user.courier?.kycStatus === 'pending') {
-      throw new ConflictError('Courier application already pending');
-    }
-
-    if (user.role === 'courier' && user.courier?.kycStatus === 'approved') {
-      throw new ConflictError('Already an approved courier');
-    }
-
-    user.role = 'courier';
-    user.courier = {
-      isVerified: false,
-      vehicleType,
-      vehicleNumber,
-      licenseNumber,
-      kycStatus: 'pending',
-      kycDocuments,
-      bankDetails: {},
-      rating: 5.0,
-      totalDeliveries: 0,
-      cancelledDeliveries: 0,
-      isOnline: false,
-      earningsToday: 0,
-      earningsThisWeek: 0,
-      earningsTotal: 0,
-    };
-    await user.save();
-
-    res.json({
-      success: true,
-      data: { message: 'Courier application submitted. Awaiting admin verification.' },
-      meta: { timestamp: new Date().toISOString() },
-    });
-  }
-
   async getCourierStatus(req: AuthenticatedRequest, res: Response): Promise<void> {
     const user = req.user!;
     

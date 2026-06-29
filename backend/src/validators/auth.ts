@@ -57,19 +57,6 @@ export const updateProfileSchema = z.object({
   }),
 });
 
-export const applyCourierSchema = z.object({
-  body: z.object({
-    vehicleType: z.enum(['bicycle', 'scooter', 'walking']),
-    vehicleNumber: z.string().max(20).optional(),
-    licenseNumber: z.string().max(30).optional(),
-    kycDocuments: z.object({
-      aadhar: z.string().url('Aadhar must be a valid URL'),
-      drivingLicense: z.string().url('License must be a valid URL').optional(),
-      selfie: z.string().url('Selfie must be a valid URL'),
-    }),
-  }),
-});
-
 export const updateLocationSchema = z.object({
   body: z.object({
     lat: z.number().min(-90).max(90),

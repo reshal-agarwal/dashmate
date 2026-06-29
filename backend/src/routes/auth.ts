@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { validateBody } from '../middleware/validate';
-import { registerSchema, verifyOtpSchema, loginSchema, resendOtpSchema, forgotPasswordSchema, resetPasswordSchema, updateProfileSchema, applyCourierSchema } from '../validators';
+import { registerSchema, verifyOtpSchema, loginSchema, resendOtpSchema, forgotPasswordSchema, resetPasswordSchema, updateProfileSchema } from '../validators';
 import { protect } from '../middleware/auth';
 import { AuthController } from '../controllers/authController';
 
@@ -16,7 +16,6 @@ router.post('/reset-password', validateBody(resetPasswordSchema), authController
 
 router.get('/me', protect, authController.getMe);
 router.put('/profile', protect, validateBody(updateProfileSchema), authController.updateProfile);
-router.post('/apply-courier', protect, validateBody(applyCourierSchema), authController.applyCourier);
 router.get('/courier-status', protect, authController.getCourierStatus);
 
 export default router;

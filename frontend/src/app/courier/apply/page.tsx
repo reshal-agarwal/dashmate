@@ -6,7 +6,7 @@ import { api, handleApiError } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { CourierLayout } from '@/components/layout';
 import { useAuthStore } from '@/store';
-import { Truck, Upload, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Truck, Upload, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 
 export default function CourierApplyPage() {
   const { user, updateUser } = useAuthStore();
@@ -20,6 +20,7 @@ export default function CourierApplyPage() {
     licenseNumber: '',
     aadharUrl: '',
     selfieUrl: '',
+    drivingLicenseUrl: '',
     upiId: '',
   });
 
@@ -127,7 +128,7 @@ export default function CourierApplyPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Driving License URL (optional)</label>
             <input type="url" value={form.drivingLicenseUrl || ''}
-              onChange={e => setForm(f => ({ ...f, drivingLicenseUrl: e.target.value || undefined }))}
+              onChange={e => setForm(f => ({ ...f, drivingLicenseUrl: e.target.value }))}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
             />
           </div>

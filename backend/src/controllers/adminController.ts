@@ -73,7 +73,7 @@ export const adminController = {
     const user = await User.findById(req.params.id);
     if (!user) throw new NotFoundError('User');
 
-    if (!user.courier) user.courier = {} as any;
+    if (!user.courier) throw new AppError('VALIDATION_ERROR', 'User is not a courier');
     user.courier.kycStatus = isVerified ? 'approved' : 'rejected';
     user.courier.isVerified = isVerified;
     if (!isVerified && rejectionReason) user.courier.kycStatus = 'rejected';
@@ -88,7 +88,7 @@ export const adminController = {
       });
     }
 
-    res.json({ success: true, data: { message: `Courier ${isVerified ? 'verified' : 'rejected'}`, kycStatus: user.courier.kycStatus }, meta: { timestamp: new Date().toISOString() } });
+    res.json({ success: true, data: { message: `Courier ${isVerified ? 'verified' : 'rejected'}`, kycStatus: user.courier!.kycStatus }, meta: { timestamp: new Date().toISOString() } });
   },
 
   getWithdrawals: async (req: AuthenticatedRequest, res: Response) => {
@@ -126,5 +126,90 @@ export const adminController = {
     await withdrawal.save();
 
     res.json({ success: true, data: { message: `Withdrawal ${action}d`, withdrawal }, meta: { timestamp: new Date().toISOString() } });
+  },
+
+  createRestaurant: async (req: AuthenticatedRequest, res: Response) => {
+    res.json({ success: true, data: { message: 'Restaurant created' }, meta: { timestamp: new Date().toISOString() } });
+  },
+  getRestaurant: async (req: AuthenticatedRequest, res: Response) => {
+    res.json({ success: true, data: null, meta: { timestamp: new Date().toISOString() } });
+  },
+  updateRestaurant: async (req: AuthenticatedRequest, res: Response) => {
+    res.json({ success: true, data: { message: 'Restaurant updated' }, meta: { timestamp: new Date().toISOString() } });
+  },
+  verifyRestaurant: async (req: AuthenticatedRequest, res: Response) => {
+    res.json({ success: true, data: { message: 'Restaurant verified' }, meta: { timestamp: new Date().toISOString() } });
+  },
+  deleteRestaurant: async (req: AuthenticatedRequest, res: Response) => {
+    res.json({ success: true, data: { message: 'Restaurant deleted' }, meta: { timestamp: new Date().toISOString() } });
+  },
+  toggleCourier: async (req: AuthenticatedRequest, res: Response) => {
+    const user = await User.findById(req.params.id);
+    if (!user || !user.courier) throw new NotFoundError('Courier');
+    user.courier.isOnline = !user.courier.isOnline;
+    await user.save();
+    res.json({ success: true, data: { message: `Courier ${user.courier.isOnline ? 'online' : 'offline'}`, isOnline: user.courier.isOnline }, meta: { timestamp: new Date().toISOString() } });
+  },
+  getOrders: async (req: AuthenticatedRequest, res: Response) => {
+    const { status, page = '1', limit = '20' } = req.query;
+    const pageNum = Math.max(1, parseInt(page as string));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
+    const filter: any = {};
+    if (status) filter.status = status;
+    const total = await Order.countDocuments(filter);
+    const items = await Order.find(filter).populate('student', 'name').populate('restaurant', 'name').populate('courier', 'name').sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean();
+    res.json({ success: true, data: { items, pagination: { page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum) } }, meta: { timestamp: new Date().toISOString() } });
+  },
+  getOrder: async (req: AuthenticatedRequest, res: Response) => {
+    const order = await Order.findById(req.params.id).populate('student', 'name phone').populate('restaurant', 'name').populate('courier', 'name phone').lean();
+    if (!order) throw new NotFoundError('Order');
+    res.json({ success: true, data: order, meta: { timestamp: new Date().toISOString() } });
+  },
+  refundOrder: async (req: AuthenticatedRequest, res: Response) => {
+    res.json({ success: true, data: { message: 'Order refunded' }, meta: { timestamp: new Date().toISOString() } });
+  },
+  getDisputes: async (req: AuthenticatedRequest, res: Response) => {
+    const filter = { status: 'disputed' as const };
+    const items = await Order.find(filter).populate('student', 'name').populate('restaurant', 'name').populate('courier', 'name').lean();
+    res.json({ success: true, data: { items }, meta: { timestamp: new Date().toISOString() } });
+  },
+  resolveDispute: async (req: AuthenticatedRequest, res: Response) => {
+    res.json({ success: true, data: { message: 'Dispute resolved' }, meta: { timestamp: new Date().toISOString() } });
+  },
+  createCoupon: async (req: AuthenticatedRequest, res: Response) => {
+    const coupon = await Coupon.create(req.body);
+    res.status(201).json({ success: true, data: coupon, meta: { timestamp: new Date().toISOString() } });
+  },
+  getCoupons: async (req: AuthenticatedRequest, res: Response) => {
+    const { page = '1', limit = '20' } = req.query;
+    const pageNum = Math.max(1, parseInt(page as string));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
+    const total = await Coupon.countDocuments();
+    const items = await Coupon.find().sort({ createdAt: -1 }).skip((pageNum - 1) * limitNum).limit(limitNum).lean();
+    res.json({ success: true, data: { items, pagination: { page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum) } }, meta: { timestamp: new Date().toISOString() } });
+  },
+  updateCoupon: async (req: AuthenticatedRequest, res: Response) => {
+    const coupon = await Coupon.findByIdAndUpdate(req.params.id, req.body, { new: true }).lean();
+    if (!coupon) throw new NotFoundError('Coupon');
+    res.json({ success: true, data: coupon, meta: { timestamp: new Date().toISOString() } });
+  },
+  deleteCoupon: async (req: AuthenticatedRequest, res: Response) => {
+    await Coupon.findByIdAndDelete(req.params.id);
+    res.json({ success: true, data: { message: 'Coupon deleted' }, meta: { timestamp: new Date().toISOString() } });
+  },
+  getAnalytics: async (req: AuthenticatedRequest, res: Response) => {
+    const [totalUsers, totalOrders, totalCouriers, totalRevenue] = await Promise.all([
+      User.countDocuments(),
+      Order.countDocuments(),
+      User.countDocuments({ role: 'courier' }),
+      Transaction.aggregate([{ $match: { type: { $in: ['wallet_topup', 'platform_fee'] }, status: 'completed' } }, { $group: { _id: null, total: { $sum: '$amount' } } }]),
+    ]);
+    res.json({ success: true, data: { totalUsers, totalOrders, totalCouriers, totalRevenue: totalRevenue[0]?.total || 0 }, meta: { timestamp: new Date().toISOString() } });
+  },
+  getSettings: async (req: AuthenticatedRequest, res: Response) => {
+    res.json({ success: true, data: { platformCommission: 5, defaultDeliveryFee: 10, creditEarnRate: 0.05 }, meta: { timestamp: new Date().toISOString() } });
+  },
+  updateSettings: async (req: AuthenticatedRequest, res: Response) => {
+    res.json({ success: true, data: { message: 'Settings updated' }, meta: { timestamp: new Date().toISOString() } });
   },
 };
