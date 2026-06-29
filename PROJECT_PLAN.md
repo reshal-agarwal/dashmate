@@ -91,7 +91,7 @@ A peer-to-peer delivery marketplace for college students where:
 - [x] Order history + detail view + ratings
 - [x] Credits earn/spend logic + conversion to wallet + history
 
-### Phase 2: Restaurant Owner (Week 2, Days 1-3) - IN PROGRESS
+### Phase 2: Restaurant Owner (Week 2, Days 1-3) - COMPLETE
 - [x] Restaurant dashboard (today's orders, stats, earnings)
 - [x] Product management (CRUD, bulk toggle)
 - [x] Order kanban: placed → confirmed → preparing → ready
@@ -102,14 +102,14 @@ A peer-to-peer delivery marketplace for college students where:
 - [ ] Bulk toggle products by category
 - [ ] Download analytics report
 
-### Phase 3: Courier (Week 2, Days 4-7)
-- [ ] Courier application + KYC (Aadhar, license, selfie upload)
-- [ ] Admin verification workflow
-- [ ] Online/offline toggle + location broadcasting (Socket.io)
-- [ ] Nearby orders feed (geohash query)
-- [ ] Accept → pickup (4-digit code) → deliver (4-digit code)
-- [ ] Earnings dashboard (today/week/month, pending payout)
-- [ ] Withdrawal requests (manual UPI)
+### Phase 3: Courier (Week 2, Days 4-7) - COMPLETE
+- [x] Courier application + KYC (Aadhar, license, selfie upload)
+- [x] Admin verification workflow
+- [x] Online/offline toggle + location broadcasting (Socket.io)
+- [x] Nearby orders feed (geohash query)
+- [x] Accept → pickup (4-digit code) → deliver (4-digit code)
+- [x] Earnings dashboard (today/week/month, pending payout)
+- [x] Withdrawal requests (manual UPI)
 
 ### Phase 4: Admin Panel (Week 3, Days 1-3)
 - [ ] Restaurant onboarding + verification
@@ -249,17 +249,17 @@ MAX_CART_ITEMS = 50 items
 
 ---
 
-## 🏁 Current Status: Phase 1 Complete
+## 🏁 Current Status: Phase 3 Complete
 
 **Phase 0 completed:** All foundation contracts, middleware, models, validators, routes structure, cron jobs, Socket.io setup
 
 **Phase 1 completed:** Full student core - restaurant listing/menu, client cart, checkout, order placement/cancellation/rating, wallet topup (Razorpay), credits earn/convert/history, profile/addresses/notifications
 
-**Phase 2 completed (backend):** Full restaurant owner controller — dashboard stats, profile management, product CRUD (create/read/update/delete/toggle/bulk-toggle), order kanban (confirm/startPrep/markReady), cancellation with refund, payout request and history, analytics (7-day sales, top items, peak hours)
+**Phase 2 completed:** Full restaurant owner (backend + frontend) — dashboard, product CRUD, order kanban, analytics, payouts
 
-**Phase 2 completed (frontend):** Restaurant dashboard with stats grid + quick actions, product management with search/add/edit/toggle/delete, order kanban with status filter + inline actions, order detail page with progress bar + action buttons, payout request modal + history
+**Phase 3 completed:** Courier - application/KYC, admin verification, online/offline toggle, nearby orders feed, accept/pickup (4-digit)/deliver (4-digit), earnings dashboard, payout requests (UPI), profile management. All Socket.io events integrated.
 
-**Next**: Phase 3 - Courier (application, KYC, online/offline, nearby orders, delivery flow, earnings)
+**Next**: Phase 4 - Admin Panel (restaurant onboarding, courier KYC verification, order oversight, withdrawal approval, coupon management, platform settings, analytics)
 
 ---
 
