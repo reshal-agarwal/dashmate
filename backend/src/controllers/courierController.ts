@@ -144,3 +144,103 @@ export const courierController = {
       meta: { timestamp: new Date().toISOString() },
     });
   },
+
+  pickupOrder: async (req: AuthenticatedRequest, res: Response) => {
+    const { code } = req.body;
+    const order = await Order.findOne({ _id: req.params.id, courier: req.user._id });
+    if (!order) throw new NotFoundError('Order');
+    if (!isValidTransition(order.status, 'picked_up')) throw new AppError('INVALID_STATUS_TRANSITION', `Cannot pickup in ${order.status} status`);
+    if (order.pickupCode !== code) throw new AppError('PICKUP_CODE_MISMATCH', 'Invalid pickup code');
+
+    order.status = 'picked_up';
+    order.timestamps.pickedUpAt = new Date();
+    await order.save();
+
+    const io = (global as any).io;
+    if (io) {
+      io.emitToOrder(String(order._id), 'order:status', { orderId: order._id, status: 'picked_up' });
+      io.emitToRestaurant(String(order.restaurant), 'order:status', { orderId: order._id, status: 'picked_up' });
+    }
+
+    res.json({ success: true, data: { message: 'Order picked up', orderId: order._id, orderNumber: order.orderNumber }, meta: { timestamp: new Date().toISOString() } });
+  },
+
+  deliverOrder: async (req: AuthenticatedRequest, res: Response) => {
+    const { code } = req.body;
+    const order = await Order.findOne({ _id: req.params.id, courier: req.user._id });
+    if (!order) throw new NotFoundError('Order');
+    if (!isValidTransition(order.status, 'delivered')) throw new AppError('INVALID_STATUS_TRANSITION', `Cannot deliver in ${order.status} status`);
+    if (order.deliveryCode !== code) throw new AppError('DELIVERY_CODE_MISMATCH', 'Invalid delivery code');
+
+    order.status = 'delivered';
+    order.timestamps.deliveredAt = new Date();
+    const courierFee = order.pricing.deliveryFee + (order.earnings?.courierFee || 0);
+    order.earnings = { ...order.earnings, courierFee };
+    await order.save();
+
+    const user = req.user;
+    if (!user.courier) user.courier = {};
+    user.courier.totalDeliveries = (user.courier.totalDeliveries || 0) + 1;
+    user.courier.earningsToday = (user.courier.earningsToday || 0) + courierFee;
+    user.courier.earningsThisWeek = (user.courier.earningsThisWeek || 0) + courierFee;
+    user.courier.earningsTotal = (user.courier.earningsTotal || 0) + courierFee;
+    user.walletBalance += courierFee;
+    await user.save();
+
+    await Transaction.create({
+      user: user._id, type: 'courier_earning', amount: courierFee, balanceAfter: user.walletBalance,
+      reference: { id: order._id, model: 'Order' },
+      description: `Delivery fee for order ${order.orderNumber}`, status: 'completed',
+    });
+
+    const io = (global as any).io;
+    if (io) {
+      io.emitToOrder(String(order._id), 'order:status', { orderId: order._id, status: 'delivered', orderNumber: order.orderNumber });
+      io.emitToStudent(String(order.student), 'notification:new', { type: 'order_delivered', title: 'Order Delivered', message: `Order ${order.orderNumber} has been delivered` });
+      io.emitToCourier(String(user._id), 'earnings:update', { amount: courierFee, totalEarnings: user.courier.earningsTotal });
+    }
+
+    res.json({ success: true, data: { message: 'Order delivered', courierFee, orderNumber: order.orderNumber }, meta: { timestamp: new Date().toISOString() } });
+  },
+
+  cancelOrder: async (req: AuthenticatedRequest, res: Response) => {
+    const { reason } = req.body;
+    const order = await Order.findOne({ _id: req.params.id, courier: req.user._id });
+    if (!order) throw new NotFoundError('Order');
+    if (!canCancel('courier', order.status)) throw new AppError('ORDER_NOT_CANCELLABLE', `Cannot cancel in ${order.status} status`);
+
+    order.status = 'cancelled';
+    order.cancelledBy = 'courier';
+    order.cancellationReason = reason || 'Cancelled by courier';
+    order.timestamps.cancelledAt = new Date();
+    await order.save();
+
+    const user = req.user;
+    if (user.courier) {
+      user.courier.cancelledDeliveries = (user.courier.cancelledDeliveries || 0) + 1;
+      user.courier.isOnline = false;
+      await user.save();
+    }
+
+    const io = (global as any).io;
+    if (io) {
+      io.emitToOrder(String(order._id), 'order:status', { orderId: order._id, status: 'cancelled', cancelledBy: 'courier' });
+      io.emitToStudent(String(order.student), 'order:cancelled', { orderId: order._id, orderNumber: order.orderNumber, reason });
+      io.emitToRestaurant(String(order.restaurant), 'order:cancelled', { orderId: order._id, orderNumber: order.orderNumber, reason });
+    }
+
+    res.json({ success: true, data: { message: 'Order cancelled', orderNumber: order.orderNumber }, meta: { timestamp: new Date().toISOString() } });
+  },
+
+  getActiveOrder: async (req: AuthenticatedRequest, res: Response) => {
+    const order = await Order.findOne({
+      courier: req.user._id,
+      status: { $in: ['courier_assigned', 'picked_up'] },
+    })
+      .populate('restaurant', 'name category location contactPhone images')
+      .populate('student', 'name phone')
+      .lean();
+
+    res.json({ success: true, data: order, meta: { timestamp: new Date().toISOString() } });
+  },
+
