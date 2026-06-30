@@ -29,6 +29,7 @@ router.put('/orders/:id/ready', restaurantController.markReady);
 router.put('/orders/:id/cancel', restaurantController.cancelOrder);
 
 router.get('/analytics', restaurantController.getAnalytics);
+router.get('/analytics/download', restaurantController.downloadAnalyticsReport);
 router.get('/payouts/history', restaurantController.getPayoutHistory);
 router.post('/payouts/request', restaurantController.requestPayout);
 

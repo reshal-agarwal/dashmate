@@ -72,6 +72,35 @@ export const restaurantController = {
     });
   },
 
+  downloadAnalyticsReport: async (req: AuthenticatedRequest, res: Response) => {
+    const restaurant = await Restaurant.findOne({ owner: req.user._id });
+    if (!restaurant) throw new NotFoundError('Restaurant');
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const orders = await Order.find({
+      restaurant: restaurant._id,
+      createdAt: { $gte: thirtyDaysAgo },
+      status: { $ne: 'cancelled' },
+    }).populate('student', 'name phone').lean();
+
+    const rows = [['Order#', 'Date', 'Status', 'Items', 'Subtotal', 'Delivery Fee', 'Total', 'Payment', 'Student', 'Student Phone']];
+    for (const o of orders) {
+      const itemNames = o.items.map((i: any) => `${i.name}×${i.quantity}`).join('; ');
+      rows.push([
+        o.orderNumber, new Date(o.createdAt).toISOString().split('T')[0], o.status,
+        itemNames, o.pricing.subtotal, o.pricing.deliveryFee, o.pricing.totalAmount,
+        o.payment.method, (o.student as any)?.name || '', (o.student as any)?.phone || '',
+      ]);
+    }
+
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="analytics-${restaurant.name.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv"`);
+    res.send(csv);
+  },
+
   getAnalytics: async (req: AuthenticatedRequest, res: Response) => {
     const restaurant = await Restaurant.findOne({ owner: req.user._id });
     if (!restaurant) throw new NotFoundError('Restaurant');
