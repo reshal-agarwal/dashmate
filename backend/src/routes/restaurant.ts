@@ -19,6 +19,7 @@ router.put('/products/:id', restaurantController.updateProduct);
 router.delete('/products/:id', restaurantController.deleteProduct);
 router.put('/products/:id/toggle', restaurantController.toggleProduct);
 router.post('/products/bulk-toggle', restaurantController.bulkToggleProducts);
+router.post('/products/bulk-toggle-category', restaurantController.bulkToggleByCategory);
 
 router.get('/orders', restaurantController.getOrders);
 router.get('/orders/:id', restaurantController.getOrder);

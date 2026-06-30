@@ -57,3 +57,16 @@ export const bulkToggleProductsSchema = z.object({
     isAvailable: z.boolean(),
   }),
 });
+
+export const bulkToggleCategorySchema = z.object({
+  body: z.object({
+    category: z.string().min(1).max(50),
+    isAvailable: z.boolean(),
+  }),
+});
+
+export const uploadImageSchema = z.object({
+  body: z.object({
+    image: z.string().min(1, 'Image data is required'),
+  }),
+});

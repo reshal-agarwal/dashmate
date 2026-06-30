@@ -191,6 +191,14 @@ export const restaurantController = {
     res.json({ success: true, data: { message: `${result.modifiedCount} products updated`, modifiedCount: result.modifiedCount }, meta: { timestamp: new Date().toISOString() } });
   },
 
+  bulkToggleByCategory: async (req: AuthenticatedRequest, res: Response) => {
+    const { category, isAvailable } = req.body;
+    const restaurant = await Restaurant.findOne({ owner: req.user._id });
+    if (!restaurant) throw new NotFoundError('Restaurant');
+    const result = await Product.updateMany({ restaurant: restaurant._id, category }, { $set: { isAvailable } });
+    res.json({ success: true, data: { message: `${result.modifiedCount} products updated in '${category}'`, modifiedCount: result.modifiedCount }, meta: { timestamp: new Date().toISOString() } });
+  },
+
   getOrders: async (req: AuthenticatedRequest, res: Response) => {
     const { status, page = '1', limit = '10' } = req.query;
     const pageNum = Math.max(1, parseInt(page as string));
