@@ -98,9 +98,9 @@ A peer-to-peer delivery marketplace for college students where:
 - [x] Prep timer + ready notification to couriers
 - [x] Payout requests (manual UPI first)
 - [x] Basic analytics (sales, popular items, peak hours)
-- [ ] Cloudinary image upload for products
-- [ ] Bulk toggle products by category
-- [ ] Download analytics report
+- [x] Cloudinary image upload for products
+- [x] Bulk toggle products by category
+- [x] Download analytics report
 
 ### Phase 3: Courier (Week 2, Days 4-7) - COMPLETE
 - [x] Courier application + KYC (Aadhar, license, selfie upload)
@@ -255,7 +255,7 @@ MAX_CART_ITEMS = 50 items
 
 **Phase 1 completed:** Full student core - restaurant listing/menu, client cart, checkout, order placement/cancellation/rating, wallet topup (Razorpay), credits earn/convert/history, profile/addresses/notifications
 
-**Phase 2 completed:** Full restaurant owner (backend + frontend) — dashboard, product CRUD, order kanban, analytics, payouts
+**Phase 2 completed:** Full restaurant owner (backend + frontend) — dashboard, product CRUD, order kanban, analytics, payouts, Cloudinary image upload, bulk toggle by category, downloadable CSV reports
 
 **Phase 3 completed:** Courier - application/KYC, admin verification, online/offline toggle, nearby orders feed, accept/pickup (4-digit)/deliver (4-digit), earnings dashboard, payout requests (UPI), profile management. All Socket.io events integrated.
 
