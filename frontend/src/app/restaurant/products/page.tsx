@@ -166,9 +166,20 @@ export default function ProductsPage() {
     }
   };
 
+  const handleBulkToggleCategory = async (category: string, isAvailable: boolean) => {
+    try {
+      await api.post('/restaurant/products/bulk-toggle-category', { category, isAvailable });
+      fetchProducts();
+    } catch (err) {
+      setError(handleApiError(err).message);
+    }
+  };
+
   const filtered = products.filter(p =>
     !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.category.toLowerCase().includes(search.toLowerCase())
   );
+
+  const groupedCategories = [...new Set(filtered.map(p => p.category))].sort();
 
   if (!isAuthenticated) return null;
 
@@ -221,39 +232,59 @@ export default function ProductsPage() {
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {filtered.map((product) => (
-              <div key={product.id} className="bg-white rounded-xl border border-gray-100 p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-gray-900">{product.name}</h3>
-                      {product.isVegetarian && <span className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded">Veg</span>}
-                      {!product.isAvailable && <span className="text-xs text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Unavailable</span>}
-                    </div>
-                    <p className="text-sm text-gray-500 mt-0.5">{product.category} · ₹{product.price}</p>
-                    {product.description && (
-                      <p className="text-xs text-gray-400 mt-1 line-clamp-1">{product.description}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 ml-3">
+          <div className="space-y-4">
+            {groupedCategories.map((category) => {
+              const categoryProducts = filtered.filter(p => p.category === category);
+              const allAvailable = categoryProducts.every(p => p.isAvailable);
+              const anyAvailable = categoryProducts.some(p => p.isAvailable);
+              return (
+                <div key={category}>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{category}</h4>
                     <button
-                      onClick={() => handleToggle(product.id)}
-                      className={cn('p-2 rounded-lg transition-colors', product.isAvailable ? 'hover:bg-orange-50 text-orange-500' : 'hover:bg-green-50 text-green-500')}
-                      title={product.isAvailable ? 'Disable' : 'Enable'}
+                      onClick={() => handleBulkToggleCategory(category, !anyAvailable)}
+                      className="text-xs text-primary-600 hover:text-primary-700 font-medium"
                     >
-                      {product.isAvailable ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {allAvailable ? 'Disable all' : 'Enable all'}
                     </button>
-                    <button onClick={() => openEdit(product)} className="p-2 rounded-lg hover:bg-blue-50 text-blue-500">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleDelete(product.id)} className="p-2 rounded-lg hover:bg-red-50 text-red-500">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {categoryProducts.map((product) => (
+                      <div key={product.id} className="bg-white rounded-xl border border-gray-100 p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-gray-900">{product.name}</h3>
+                              {product.isVegetarian && <span className="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded">Veg</span>}
+                              {!product.isAvailable && <span className="text-xs text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Unavailable</span>}
+                            </div>
+                            <p className="text-sm text-gray-500 mt-0.5">₹{product.price}</p>
+                            {product.description && (
+                              <p className="text-xs text-gray-400 mt-1 line-clamp-1">{product.description}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 ml-3">
+                            <button
+                              onClick={() => handleToggle(product.id)}
+                              className={cn('p-2 rounded-lg transition-colors', product.isAvailable ? 'hover:bg-orange-50 text-orange-500' : 'hover:bg-green-50 text-green-500')}
+                              title={product.isAvailable ? 'Disable' : 'Enable'}
+                            >
+                              {product.isAvailable ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                            <button onClick={() => openEdit(product)} className="p-2 rounded-lg hover:bg-blue-50 text-blue-500">
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => handleDelete(product.id)} className="p-2 rounded-lg hover:bg-red-50 text-red-500">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
