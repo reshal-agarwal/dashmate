@@ -6,6 +6,7 @@ import { Transaction } from '../models/transactionModel';
 import { WithdrawalRequest } from '../models/withdrawalModel';
 import { NotFoundError, AppError } from '../utils/errors';
 import { isValidTransition, getCancellationPolicy, canCancel } from '../utils/cancellationPolicy';
+import { uploadImage } from '../services/cloudinary';
 
 interface AuthenticatedRequest extends Request {
   user?: any;
@@ -111,6 +112,13 @@ export const restaurantController = {
       data: { sales, topItems, peakHours, totalRevenue: orders.reduce((s, o) => s + o.pricing.totalAmount, 0), totalOrders: orders.length },
       meta: { timestamp: new Date().toISOString() },
     });
+  },
+
+  uploadImage: async (req: AuthenticatedRequest, res: Response) => {
+    const { image } = req.body;
+    if (!image || typeof image !== 'string') throw new AppError('VALIDATION_ERROR', 'Image data (base64) is required');
+    const url = await uploadImage(image);
+    res.json({ success: true, data: { url }, meta: { timestamp: new Date().toISOString() } });
   },
 
   getProducts: async (req: AuthenticatedRequest, res: Response) => {

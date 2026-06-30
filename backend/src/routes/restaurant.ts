@@ -10,6 +10,8 @@ router.get('/dashboard', restaurantController.getDashboard);
 router.get('/profile', restaurantController.getProfile);
 router.put('/profile', restaurantController.updateProfile);
 
+router.post('/upload', restaurantController.uploadImage);
+
 router.get('/products', restaurantController.getProducts);
 router.post('/products', restaurantController.createProduct);
 router.get('/products/:id', restaurantController.getProduct);
