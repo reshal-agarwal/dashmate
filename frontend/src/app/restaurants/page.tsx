@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
 import { api, handleApiError } from '@/lib/api';
 import { useAuthStore } from '@/store';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -97,7 +97,7 @@ function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
   );
 }
 
-export default function RestaurantsPage() {
+function RestaurantsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
@@ -319,5 +319,13 @@ export default function RestaurantsPage() {
         )}
       </div>
     </StudentLayout>
+  );
+}
+
+export default function RestaurantsPageWrapper() {
+  return (
+    <Suspense fallback={<div className="p-4 animate-pulse"><div className="h-12 bg-gray-200 rounded-lg mb-4" /><div className="h-96 bg-gray-200 rounded-xl" /></div>}>
+      <RestaurantsPage />
+    </Suspense>
   );
 }

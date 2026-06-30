@@ -47,3 +47,15 @@ export const payoutRequestSchema = z.object({
     upiId: z.string().regex(/^[\w.-]+@[\w.-]+$/, 'Invalid UPI ID'),
   }),
 });
+
+export const applyCourierSchema = z.object({
+  body: z.object({
+    vehicleType: z.enum(['bicycle', 'scooter', 'walking']),
+    vehicleNumber: z.string().optional(),
+    licenseNumber: z.string().optional(),
+    aadharUrl: z.string().url('Valid Aadhar document URL required'),
+    selfieUrl: z.string().url('Valid selfie URL required'),
+    drivingLicenseUrl: z.string().url().optional(),
+    upiId: z.string().regex(/^[\w.-]+@[\w.-]+$/, 'Invalid UPI ID').optional(),
+  }),
+});
