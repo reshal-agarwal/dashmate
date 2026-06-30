@@ -25,6 +25,8 @@ import {
   Trash2,
   Loader2,
   IndianRupee,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 export default function ProductsPage() {
@@ -39,10 +41,11 @@ export default function ProductsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const [form, setForm] = useState({
     name: '', description: '', category: '', price: '',
     isVegetarian: false, isVegan: false, spiceLevel: '0',
-    preparationTime: '10', stock: '-1',
+    preparationTime: '10', stock: '-1', images: [] as string[],
   });
 
   const fetchProducts = useCallback(async () => {
@@ -66,7 +69,7 @@ export default function ProductsPage() {
   }, [isAuthenticated, fetchProducts, router]);
 
   const resetForm = () => {
-    setForm({ name: '', description: '', category: '', price: '', isVegetarian: false, isVegan: false, spiceLevel: '0', preparationTime: '10', stock: '-1' });
+    setForm({ name: '', description: '', category: '', price: '', isVegetarian: false, isVegan: false, spiceLevel: '0', preparationTime: '10', stock: '-1', images: [] });
     setEditingId(null);
     setFormError(null);
   };
@@ -82,9 +85,33 @@ export default function ProductsPage() {
       spiceLevel: String(product.spiceLevel),
       preparationTime: String(product.preparationTime),
       stock: String(product.stock),
+      images: product.images || [],
     });
     setEditingId(product.id);
     setShowForm(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result as string;
+        const res = await api.post<{ success: boolean; data: { url: string } }>('/restaurant/upload', { image: base64 });
+        setForm({ ...form, images: [...form.images, res.data.data.url] });
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      setFormError(handleApiError(err).message);
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setForm({ ...form, images: form.images.filter((_, i) => i !== index) });
   };
 
   const handleSubmit = async () => {
@@ -303,6 +330,24 @@ export default function ProductsPage() {
                   <input type="checkbox" checked={form.isVegan} onChange={(e) => setForm({ ...form, isVegan: e.target.checked })} className="w-4 h-4 rounded border-gray-300 text-primary-600" />
                   <span className="text-sm text-gray-700">Vegan</span>
                 </label>
+              </div>
+
+              <div>
+                <Label>Product Images</Label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {form.images.map((url, i) => (
+                    <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200">
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <button onClick={() => removeImage(i)} className="absolute top-0 right-0 bg-red-500 text-white p-0.5 rounded-bl-lg"><X className="w-3 h-3" /></button>
+                    </div>
+                  ))}
+                  {form.images.length < 5 && (
+                    <label className="w-16 h-16 flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 cursor-pointer hover:border-primary-400">
+                      {imageUploading ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" /> : <Upload className="w-4 h-4 text-gray-400" />}
+                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                    </label>
+                  )}
+                </div>
               </div>
 
               {formError && <p className="text-sm text-red-600">{formError}</p>}
