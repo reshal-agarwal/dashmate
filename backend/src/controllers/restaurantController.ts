@@ -6,6 +6,7 @@ import { Transaction } from '../models/transactionModel';
 import { WithdrawalRequest } from '../models/withdrawalModel';
 import { NotFoundError, AppError } from '../utils/errors';
 import { isValidTransition, getCancellationPolicy, canCancel } from '../utils/cancellationPolicy';
+import { uploadImage } from '../services/cloudinary';
 
 interface AuthenticatedRequest extends Request {
   user?: any;
@@ -71,6 +72,35 @@ export const restaurantController = {
     });
   },
 
+  downloadAnalyticsReport: async (req: AuthenticatedRequest, res: Response) => {
+    const restaurant = await Restaurant.findOne({ owner: req.user._id });
+    if (!restaurant) throw new NotFoundError('Restaurant');
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const orders = await Order.find({
+      restaurant: restaurant._id,
+      createdAt: { $gte: thirtyDaysAgo },
+      status: { $ne: 'cancelled' },
+    }).populate('student', 'name phone').lean();
+
+    const rows = [['Order#', 'Date', 'Status', 'Items', 'Subtotal', 'Delivery Fee', 'Total', 'Payment', 'Student', 'Student Phone']];
+    for (const o of orders) {
+      const itemNames = o.items.map((i: any) => `${i.name}×${i.quantity}`).join('; ');
+      rows.push([
+        o.orderNumber, new Date(o.createdAt).toISOString().split('T')[0], o.status,
+        itemNames, o.pricing.subtotal, o.pricing.deliveryFee, o.pricing.totalAmount,
+        o.payment.method, (o.student as any)?.name || '', (o.student as any)?.phone || '',
+      ]);
+    }
+
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="analytics-${restaurant.name.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv"`);
+    res.send(csv);
+  },
+
   getAnalytics: async (req: AuthenticatedRequest, res: Response) => {
     const restaurant = await Restaurant.findOne({ owner: req.user._id });
     if (!restaurant) throw new NotFoundError('Restaurant');
@@ -111,6 +141,13 @@ export const restaurantController = {
       data: { sales, topItems, peakHours, totalRevenue: orders.reduce((s, o) => s + o.pricing.totalAmount, 0), totalOrders: orders.length },
       meta: { timestamp: new Date().toISOString() },
     });
+  },
+
+  uploadImage: async (req: AuthenticatedRequest, res: Response) => {
+    const { image } = req.body;
+    if (!image || typeof image !== 'string') throw new AppError('VALIDATION_ERROR', 'Image data (base64) is required');
+    const url = await uploadImage(image);
+    res.json({ success: true, data: { url }, meta: { timestamp: new Date().toISOString() } });
   },
 
   getProducts: async (req: AuthenticatedRequest, res: Response) => {
@@ -181,6 +218,14 @@ export const restaurantController = {
     const { productIds, isAvailable } = req.body;
     const result = await Product.updateMany({ _id: { $in: productIds } }, { $set: { isAvailable } });
     res.json({ success: true, data: { message: `${result.modifiedCount} products updated`, modifiedCount: result.modifiedCount }, meta: { timestamp: new Date().toISOString() } });
+  },
+
+  bulkToggleByCategory: async (req: AuthenticatedRequest, res: Response) => {
+    const { category, isAvailable } = req.body;
+    const restaurant = await Restaurant.findOne({ owner: req.user._id });
+    if (!restaurant) throw new NotFoundError('Restaurant');
+    const result = await Product.updateMany({ restaurant: restaurant._id, category }, { $set: { isAvailable } });
+    res.json({ success: true, data: { message: `${result.modifiedCount} products updated in '${category}'`, modifiedCount: result.modifiedCount }, meta: { timestamp: new Date().toISOString() } });
   },
 
   getOrders: async (req: AuthenticatedRequest, res: Response) => {

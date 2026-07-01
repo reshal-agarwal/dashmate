@@ -17,12 +17,17 @@ import {
   Menu,
   X,
   Bell,
-  LogOut
+  LogOut,
+  Settings,
+  ShieldCheck,
+  Store,
+  Users,
+  BarChart3
 } from 'lucide-react';
 
 interface BottomNavProps {
   children?: ReactNode;
-  role?: 'student' | 'courier' | 'restaurant';
+  role?: 'student' | 'courier' | 'restaurant' | 'admin';
 }
 
 interface NavItem {
@@ -52,6 +57,13 @@ const navItems: Record<string, NavItem[]> = {
     { href: '/restaurant/orders', label: 'Orders', icon: Receipt, match: '/restaurant/orders' },
     { href: '/restaurant/products', label: 'Products', icon: ShoppingBag, match: '/restaurant/products' },
     { href: '/restaurant/payouts', label: 'Payouts', icon: CreditCard, match: '/restaurant/payouts' },
+  ],
+  admin: [
+    { href: '/admin', label: 'Dashboard', icon: Home, match: '/admin' },
+    { href: '/admin/restaurants', label: 'Restaurants', icon: Store, match: '/admin/restaurants' },
+    { href: '/admin/couriers', label: 'Couriers', icon: Users, match: '/admin/couriers' },
+    { href: '/admin/orders', label: 'Orders', icon: Receipt, match: '/admin/orders' },
+    { href: '/admin/analytics', label: 'Analytics', icon: BarChart3, match: '/admin/analytics' },
   ],
 };
 

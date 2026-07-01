@@ -6,3 +6,4 @@ export { Coupon } from './couponModel';
 export { Transaction } from './transactionModel';
 export { Notification } from './notificationModel';
 export { WithdrawalRequest } from './withdrawalModel';
+export { Settings } from './settingsModel';

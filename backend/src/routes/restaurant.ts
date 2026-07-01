@@ -10,6 +10,8 @@ router.get('/dashboard', restaurantController.getDashboard);
 router.get('/profile', restaurantController.getProfile);
 router.put('/profile', restaurantController.updateProfile);
 
+router.post('/upload', restaurantController.uploadImage);
+
 router.get('/products', restaurantController.getProducts);
 router.post('/products', restaurantController.createProduct);
 router.get('/products/:id', restaurantController.getProduct);
@@ -17,6 +19,7 @@ router.put('/products/:id', restaurantController.updateProduct);
 router.delete('/products/:id', restaurantController.deleteProduct);
 router.put('/products/:id/toggle', restaurantController.toggleProduct);
 router.post('/products/bulk-toggle', restaurantController.bulkToggleProducts);
+router.post('/products/bulk-toggle-category', restaurantController.bulkToggleByCategory);
 
 router.get('/orders', restaurantController.getOrders);
 router.get('/orders/:id', restaurantController.getOrder);
@@ -26,6 +29,7 @@ router.put('/orders/:id/ready', restaurantController.markReady);
 router.put('/orders/:id/cancel', restaurantController.cancelOrder);
 
 router.get('/analytics', restaurantController.getAnalytics);
+router.get('/analytics/download', restaurantController.downloadAnalyticsReport);
 router.get('/payouts/history', restaurantController.getPayoutHistory);
 router.post('/payouts/request', restaurantController.requestPayout);
 

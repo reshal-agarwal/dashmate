@@ -8,7 +8,7 @@ import { initSocket } from './socket';
 import { initCronJobs } from './jobs';
 import { initRedis } from './middleware/rateLimiter';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
-import { protect } from './middleware/auth';
+import { protect, authorize } from './middleware/auth';
 import authRoutes from './routes/auth';
 import studentRoutes from './routes/student';
 import courierRoutes from './routes/courier';
@@ -33,7 +33,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/student', protect, studentRoutes);
 app.use('/api/v1/courier', protect, courierRoutes);
 app.use('/api/v1/restaurant', protect, restaurantRoutes);
-app.use('/api/v1/admin', protect, adminRoutes);
+app.use('/api/v1/admin', protect, authorize('admin'), adminRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
