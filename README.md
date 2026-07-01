@@ -86,7 +86,9 @@ NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_xxx
 ## 🚦 Current Status
 
 **Phase 1 Complete** — Student Core (restaurant browsing, cart, checkout, wallet, orders, credits)
-**Phase 2** — Restaurant Owner dashboard (next)
+**Phase 2 Complete** — Restaurant Owner dashboard (products, orders kanban, analytics, payouts)
+**Phase 3 Complete** — Courier (KYC, online/offline, accept/pickup/deliver, earnings)
+**Phase 4 Complete** — Admin Panel (restaurants, couriers, orders, disputes, withdrawals, coupons, settings, analytics)
 
 ## 📱 Features
 

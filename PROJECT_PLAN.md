@@ -111,14 +111,18 @@ A peer-to-peer delivery marketplace for college students where:
 - [x] Earnings dashboard (today/week/month, pending payout)
 - [x] Withdrawal requests (manual UPI)
 
-### Phase 4: Admin Panel (Week 3, Days 1-3)
-- [ ] Restaurant onboarding + verification
-- [ ] Courier KYC verification
-- [ ] Order oversight + dispute resolution
-- [ ] Withdrawal approval (courier + restaurant)
-- [ ] Coupon management
-- [ ] Platform settings (commission %, delivery fee defaults, credit rates)
-- [ ] Analytics dashboard (orders, revenue, users, couriers)
+### Phase 4: Admin Panel (Week 3, Days 1-3) - COMPLETE
+- [x] Admin auth guard (`authorize('admin')`) on all admin routes
+- [x] Admin layout with bottom navigation (Dashboard, Restaurants, Couriers, Orders, Analytics)
+- [x] Admin dashboard with stats grid + quick actions
+- [x] Restaurant onboarding + verification (list with filter, detail with verify action)
+- [x] Courier KYC verification (list with status filter, detail with approve/reject)
+- [x] Order oversight + dispute resolution (list with status filter, detail with refund, disputes page)
+- [x] Withdrawal approval (approve/reject with rejection reason)
+- [x] Coupon management (create, edit, delete with form)
+- [x] Platform settings (commission, delivery fee, credit rates, limits)
+- [x] Analytics dashboard (key metrics, distribution, derived KPIs)
+- [x] Settings model (persistent platform config in DB)
 
 ### Phase 5: Real-time & Polish (Week 3, Days 4-7)
 - [ ] Socket.io events for all order status changes
@@ -249,7 +253,7 @@ MAX_CART_ITEMS = 50 items
 
 ---
 
-## 🏁 Current Status: Phase 3 Complete
+## 🏁 Current Status: Phase 4 Complete
 
 **Phase 0 completed:** All foundation contracts, middleware, models, validators, routes structure, cron jobs, Socket.io setup
 
@@ -259,7 +263,9 @@ MAX_CART_ITEMS = 50 items
 
 **Phase 3 completed:** Courier - application/KYC, admin verification, online/offline toggle, nearby orders feed, accept/pickup (4-digit)/deliver (4-digit), earnings dashboard, payout requests (UPI), profile management. All Socket.io events integrated.
 
-**Next**: Phase 4 - Admin Panel (restaurant onboarding, courier KYC verification, order oversight, withdrawal approval, coupon management, platform settings, analytics)
+**Phase 4 completed:** Admin panel - auth-guarded routes, dashboard with stats, restaurant onboarding/verification, courier KYC verification (approve/reject), order oversight with refund, dispute resolution, withdrawal approval workflow, coupon CRUD, platform settings (commission, fees, credit rates), analytics dashboard with KPIs. Persistent Settings model added.
+
+**Next**: Phase 5 - Real-time & Polish (Socket.io events for order status changes, student order tracking with courier location, push notifications, credit expiry cron, PWA, mobile-first UI polish, load testing + security audit)
 
 ---
 
