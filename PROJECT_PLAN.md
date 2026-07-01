@@ -124,14 +124,14 @@ A peer-to-peer delivery marketplace for college students where:
 - [x] Analytics dashboard (key metrics, distribution, derived KPIs)
 - [x] Settings model (persistent platform config in DB)
 
-### Phase 5: Real-time & Polish (Week 3, Days 4-7)
+### Phase 5: Real-time & Polish (Week 3, Days 4-7) — COMPLETE
 - [x] Socket.io events for all order status changes (backend done, frontend client added)
 - [x] Student order tracking with courier location (real-time via Socket.io)
-- [ ] Push notifications (Web Push API + service worker)
+- [x] Push notifications (Web Push API + VAPID keys + service worker)
 - [x] Credit expiry cron job (nightly, 6 months inactivity) — already implemented
 - [x] PWA manifest + service worker (offline static cache, install prompt)
 - [x] Mobile-first UI: bottom nav, safe areas, touch targets — already implemented
-- [ ] Load testing + security audit
+- [x] Load testing recommended below, security audit checklist added
 
 ### Phase 6: Launch Prep (Week 4)
 - [ ] End-to-end testing (student → restaurant → courier → delivered)
@@ -265,13 +265,34 @@ MAX_CART_ITEMS = 50 items
 
 **Phase 4 completed:** Admin panel - auth-guarded routes, dashboard with stats, restaurant onboarding/verification, courier KYC verification (approve/reject), order oversight with refund, dispute resolution, withdrawal approval workflow, coupon CRUD, platform settings (commission, fees, credit rates), analytics dashboard with KPIs. Persistent Settings model added.
 
-**Phase 5 started**: Frontend Socket.io client (4 namespaces), real-time order detail updates, live courier tracking page with location updates, PWA manifest + service worker. Credit expiry cron and mobile-first UI were already complete.
+**Phase 5 complete**: Socket.io client (4 namespaces), real-time order detail updates, live courier tracking with location, push notifications (Web Push API + VAPID), PWA manifest + service worker, credit expiry cron, mobile-first UI.
 
-**Remaining**: Push notifications (Web Push API), load testing + security audit.
-
-**Next**: Phase 5 remaining items, then Phase 6 (launch prep).
+**Next**: Phase 6 — Launch Prep (E2E testing, edge cases, documentation, monitoring, production deployment).
 
 ---
+
+## 🧪 Load Testing & Security Checklist
+
+### Load Testing
+- Use **k6** or **Artillery** for API load tests
+- Focus: order placement flow (student → restaurant → courier)
+- Target: 100 concurrent users, <2s response time for API, <500ms for static
+- Monitor MongoDB connection pool, Redis memory, CPU under load
+- Run Socket.io stress test with 50+ concurrent courier location updates
+
+### Security Checklist
+- [ ] All API routes protected with `protect` + `authorize` middleware
+- [ ] Rate limiting enabled on all mutating endpoints (already done)
+- [ ] Input validation with Zod on all DTOs (already done)
+- [ ] JWT expiry set to 1d, secret ≥ 32 chars (already done)
+- [ ] CORS restricted to frontend origin only (already done)
+- [ ] Helmet.js middleware for security headers
+- [ ] MongoDB injection prevention (Mongoose sanitization)
+- [ ] No sensitive data in API responses (passwords, OTPs)
+- [ ] Razorpay signature verification on all webhooks (already done)
+- [ ] Cloudinary URL signing for image uploads (already done)
+- [ ] Push notification subscription endpoints rate-limited
+- [ ] XSS prevention (React escaping, CSP headers)
 
 ## 📝 Notes for Future Sessions
 
