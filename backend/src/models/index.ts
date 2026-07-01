@@ -7,3 +7,4 @@ export { Transaction } from './transactionModel';
 export { Notification } from './notificationModel';
 export { WithdrawalRequest } from './withdrawalModel';
 export { Settings } from './settingsModel';
+export { PushSubscription } from './pushSubscriptionModel';

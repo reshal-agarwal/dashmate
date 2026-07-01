@@ -7,6 +7,7 @@ import { config } from './config';
 import { initSocket } from './socket';
 import { initCronJobs } from './jobs';
 import { initRedis } from './middleware/rateLimiter';
+import { initVapidKeys } from './services/pushNotifications';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { protect, authorize } from './middleware/auth';
 import authRoutes from './routes/auth';
@@ -47,6 +48,9 @@ async function startServer(): Promise<void> {
       await initRedis(config.redis.url);
       console.log('Connected to Redis');
     }
+
+    const vapidKeys = initVapidKeys();
+    if (vapidKeys) process.env.VAPID_PUBLIC_KEY = vapidKeys.publicKey;
 
     const io = initSocket(httpServer);
     (global as any).io = io;
