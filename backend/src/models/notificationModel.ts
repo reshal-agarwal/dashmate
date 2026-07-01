@@ -62,4 +62,12 @@ notificationSchema.methods.markAsRead = function() {
   return this.save();
 };
 
+notificationSchema.post('save', function() {
+  const notif = this;
+  try {
+    const { sendPushNotification } = require('../services/pushNotifications');
+    sendPushNotification(notif.user.toString(), notif.title, notif.message, { notificationId: notif._id, type: notif.type });
+  } catch {}
+});
+
 export const Notification = mongoose.model<INotification>('Notification', notificationSchema);

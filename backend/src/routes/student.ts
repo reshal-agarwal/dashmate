@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { protect } from '../middleware/auth';
 import { authorize } from '../middleware/auth';
 import { studentController } from '../controllers/studentController';
+import { pushController } from '../controllers/pushController';
 
 const router = Router();
 
@@ -32,5 +33,9 @@ router.delete('/addresses/:id', studentController.deleteAddress);
 router.get('/notifications', studentController.getNotifications);
 router.put('/notifications/:id/read', studentController.markNotificationRead);
 router.put('/notifications/read-all', studentController.markAllNotificationsRead);
+
+router.get('/push/vapid-key', pushController.getVapidKey);
+router.post('/push/subscribe', pushController.subscribe);
+router.post('/push/unsubscribe', pushController.unsubscribe);
 
 export default router;
