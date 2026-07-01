@@ -101,19 +101,20 @@ export function AuthLayout({ children }: AuthLayoutProps) {
 
 interface AdminLayoutProps {
   children: ReactNode;
+  title?: string;
+  showBack?: boolean;
+  backHref?: string;
+  actions?: ReactNode;
 }
 
-export function AdminLayout({ children }: AdminLayoutProps) {
+export function AdminLayout({ children, title, showBack, backHref, actions }: AdminLayoutProps) {
   return (
-    <SafeAreaView top bottom left right>
-      <div className="min-h-screen bg-gray-50">
-        <TopBar title="Admin Dashboard" />
-        <PageContainer className="pt-0">
-          <div className="p-4">
-            {children}
-          </div>
-        </PageContainer>
-      </div>
+    <SafeAreaView top bottom>
+      <TopBar title={title || 'Admin'} showBack={showBack} backHref={backHref} actions={actions} />
+      <PageContainer>
+        {children}
+      </PageContainer>
+      <BottomNav role="admin" />
     </SafeAreaView>
   );
 }
