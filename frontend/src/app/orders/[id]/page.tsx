@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { api, handleApiError } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input, Label, Textarea } from '@/components/ui/Form';
 import { StudentLayout } from '@/components/layout';
 import { cn } from '@/lib/utils';
+import { getStudentSocket, subscribeToOrder, unsubscribeFromOrder } from '@/lib/socket';
 import { Order, OrderStatus, OrderRating } from '@/types';
 import {
   Package,
@@ -25,6 +27,7 @@ import {
   Bike,
   MapPinned,
   Timer,
+  Navigation,
 } from 'lucide-react';
 
 const STATUS_FLOW: OrderStatus[] = [
@@ -312,6 +315,28 @@ export default function OrderDetailPage() {
     fetchOrder();
   }, [fetchOrder]);
 
+  useEffect(() => {
+    if (!params.id) return;
+    subscribeToOrder(params.id as string);
+
+    const socket = getStudentSocket();
+    if (!socket) return;
+
+    const handleStatus = (data: { orderId: string; status: string }) => {
+      if (data.orderId === params.id) fetchOrder();
+    };
+    const handleNotification = () => fetchOrder();
+
+    socket.on('order:status', handleStatus);
+    socket.on('notification:new', handleNotification);
+
+    return () => {
+      unsubscribeFromOrder(params.id as string);
+      socket.off('order:status', handleStatus);
+      socket.off('notification:new', handleNotification);
+    };
+  }, [params.id, fetchOrder]);
+
   const handleCancel = async () => {
     if (!confirm('Are you sure you want to cancel this order?')) return;
     setCancelling(true);
@@ -511,6 +536,14 @@ export default function OrderDetailPage() {
                 <p className="text-sm text-gray-500">{order.courier.phone}</p>
               </div>
             </div>
+            {(order.status === 'courier_assigned' || order.status === 'picked_up') && (
+              <Link href={`/orders/${params.id}/tracking`}>
+                <Button variant="primary" size="sm" className="mt-3 w-full">
+                  <Navigation className="w-4 h-4 mr-2" />
+                  Track Order
+                </Button>
+              </Link>
+            )}
           </div>
         )}
 
