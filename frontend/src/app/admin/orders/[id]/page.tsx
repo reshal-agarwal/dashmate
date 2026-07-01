@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api, handleApiError } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
-import { Input, Textarea } from '@/components/ui/Form';
+import { Input, Textarea, Label } from '@/components/ui/Form';
 import { ShoppingBag, ArrowLeft, AlertCircle, RotateCcw } from 'lucide-react';
 
 interface OrderDetail {
@@ -119,7 +119,8 @@ export default function AdminOrderDetail() {
         {data.status !== 'cancelled' && data.status !== 'delivered' && (
           <div className="border-t pt-4 space-y-3">
             <h3 className="font-semibold text-gray-900">Refund Order</h3>
-            <Input label="Amount" type="number" value={refundAmount} onChange={e => setRefundAmount(e.target.value)} />
+            <Label>Amount</Label>
+            <Input type="number" value={refundAmount} onChange={e => setRefundAmount(e.target.value)} />
             <Textarea placeholder="Reason for refund..." value={refundReason} onChange={e => setRefundReason(e.target.value)} />
             <Button onClick={handleRefund} loading={actionLoading} variant="danger" className="w-full">
               <RotateCcw className="w-4 h-4" /> Process Refund
