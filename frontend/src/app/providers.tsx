@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { setAuthToken } from '@/lib/api';
 import { useAuthStore } from '@/store';
 import { connectSockets, disconnectSockets } from '@/lib/socket';
+import { initPushNotifications, destroyPushNotifications } from '@/lib/pushNotifications';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const { token, user, isAuthenticated } = useAuthStore();
@@ -16,10 +17,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isAuthenticated && token && user) {
       connectSockets(token, user.role);
+      initPushNotifications(token);
     } else {
       disconnectSockets();
+      destroyPushNotifications();
     }
-    return () => { disconnectSockets(); };
+    return () => {
+      disconnectSockets();
+      destroyPushNotifications();
+    };
   }, [isAuthenticated, token, user]);
 
   return <>{children}</>;
