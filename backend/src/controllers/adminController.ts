@@ -219,9 +219,21 @@ export const adminController = {
     res.json({ success: true, data: { totalUsers, totalOrders, totalCouriers, totalRevenue: totalRevenue[0]?.total || 0 }, meta: { timestamp: new Date().toISOString() } });
   },
   getSettings: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { platformCommission: 5, defaultDeliveryFee: 10, creditEarnRate: 0.05 }, meta: { timestamp: new Date().toISOString() } });
+    const { Settings } = require('../models/settingsModel');
+    let settings = await Settings.findOne().lean();
+    if (!settings) {
+      settings = await Settings.create({});
+    }
+    res.json({ success: true, data: settings, meta: { timestamp: new Date().toISOString() } });
   },
   updateSettings: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { message: 'Settings updated' }, meta: { timestamp: new Date().toISOString() } });
+    const { Settings } = require('../models/settingsModel');
+    let settings = await Settings.findOne();
+    if (!settings) {
+      settings = new Settings();
+    }
+    Object.assign(settings, req.body);
+    await settings.save();
+    res.json({ success: true, data: settings, meta: { timestamp: new Date().toISOString() } });
   },
 };
