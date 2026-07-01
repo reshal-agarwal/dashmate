@@ -132,13 +132,25 @@ export const adminController = {
     res.json({ success: true, data: { message: 'Restaurant created' }, meta: { timestamp: new Date().toISOString() } });
   },
   getRestaurant: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: null, meta: { timestamp: new Date().toISOString() } });
+    const { Restaurant } = require('../models/restaurantModel');
+    const restaurant = await Restaurant.findById(req.params.id).populate('owner', 'name phone').lean();
+    if (!restaurant) throw new NotFoundError('Restaurant');
+    res.json({ success: true, data: restaurant, meta: { timestamp: new Date().toISOString() } });
   },
   updateRestaurant: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { message: 'Restaurant updated' }, meta: { timestamp: new Date().toISOString() } });
+    const { Restaurant } = require('../models/restaurantModel');
+    const restaurant = await Restaurant.findByIdAndUpdate(req.params.id, req.body, { new: true }).lean();
+    if (!restaurant) throw new NotFoundError('Restaurant');
+    res.json({ success: true, data: restaurant, meta: { timestamp: new Date().toISOString() } });
   },
   verifyRestaurant: async (req: AuthenticatedRequest, res: Response) => {
-    res.json({ success: true, data: { message: 'Restaurant verified' }, meta: { timestamp: new Date().toISOString() } });
+    const { Restaurant } = require('../models/restaurantModel');
+    const { isVerified } = req.body;
+    const restaurant = await Restaurant.findById(req.params.id);
+    if (!restaurant) throw new NotFoundError('Restaurant');
+    restaurant.isVerified = isVerified;
+    await restaurant.save();
+    res.json({ success: true, data: { message: `Restaurant ${isVerified ? 'verified' : 'unverified'}`, isVerified }, meta: { timestamp: new Date().toISOString() } });
   },
   deleteRestaurant: async (req: AuthenticatedRequest, res: Response) => {
     res.json({ success: true, data: { message: 'Restaurant deleted' }, meta: { timestamp: new Date().toISOString() } });
