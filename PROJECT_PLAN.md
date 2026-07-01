@@ -125,12 +125,12 @@ A peer-to-peer delivery marketplace for college students where:
 - [x] Settings model (persistent platform config in DB)
 
 ### Phase 5: Real-time & Polish (Week 3, Days 4-7)
-- [ ] Socket.io events for all order status changes
-- [ ] Student order tracking (courier location polyline)
+- [x] Socket.io events for all order status changes (backend done, frontend client added)
+- [x] Student order tracking with courier location (real-time via Socket.io)
 - [ ] Push notifications (Web Push API + service worker)
-- [ ] Credit expiry cron job (nightly, 6 months inactivity)
-- [ ] PWA manifest + service worker (offline cart, install prompt)
-- [ ] Mobile-first UI: bottom nav, safe areas, touch targets
+- [x] Credit expiry cron job (nightly, 6 months inactivity) — already implemented
+- [x] PWA manifest + service worker (offline static cache, install prompt)
+- [x] Mobile-first UI: bottom nav, safe areas, touch targets — already implemented
 - [ ] Load testing + security audit
 
 ### Phase 6: Launch Prep (Week 4)
@@ -265,7 +265,11 @@ MAX_CART_ITEMS = 50 items
 
 **Phase 4 completed:** Admin panel - auth-guarded routes, dashboard with stats, restaurant onboarding/verification, courier KYC verification (approve/reject), order oversight with refund, dispute resolution, withdrawal approval workflow, coupon CRUD, platform settings (commission, fees, credit rates), analytics dashboard with KPIs. Persistent Settings model added.
 
-**Next**: Phase 5 - Real-time & Polish (Socket.io events for order status changes, student order tracking with courier location, push notifications, credit expiry cron, PWA, mobile-first UI polish, load testing + security audit)
+**Phase 5 started**: Frontend Socket.io client (4 namespaces), real-time order detail updates, live courier tracking page with location updates, PWA manifest + service worker. Credit expiry cron and mobile-first UI were already complete.
+
+**Remaining**: Push notifications (Web Push API), load testing + security audit.
+
+**Next**: Phase 5 remaining items, then Phase 6 (launch prep).
 
 ---
 
